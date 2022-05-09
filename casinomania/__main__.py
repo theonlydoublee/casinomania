@@ -43,8 +43,8 @@ def create_bot() -> lightbulb.BotApp:
 
         # bot.reload_extensions('TestBot.Music.Commands')
 
-    # bot.load_extensions_from("./casinomania/Commands")
-    bot.load_extensions_from("./casinomania/Tasks")
+    bot.load_extensions_from("./casinomania/Commands")
+    # bot.load_extensions_from("./casinomania/Tasks")
     # bot.load_extensions_from("./casinomania/Listeners")
 
     # Loads tasks and autostart tasks will start
