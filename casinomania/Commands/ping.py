@@ -10,12 +10,12 @@ pingPL = lightbulb.Plugin("pingPL")
 @pingPL.command()
 @lightbulb.command("ping", "Says 'pong!'")
 @lightbulb.implements(lightbulb.SlashCommand)
-async def cmd_ping(ctx: lightbulb.context):
+async def cmd_ping(ctx: lightbulb.context.Context):
     # await pingPL.bot.rest.create_message(ctx.channel_id, "Create New Message")
 
-    await createImages.cards_image(['2_of_clubs.png', '3_of_diamonds.png', '5_of_spades.png'])
+    img = await createImages.cards_image(['2_of_clubs.png', '3_of_diamonds.png', '5_of_spades.png'], ctx.user.id)
 
-    await ctx.respond('Pong!')
+    await ctx.respond('Pong!', attachment=img)
 # endregion
 
 

@@ -1,9 +1,15 @@
 import sys
+import random, os
 from PIL import Image
 
 
-async def cards_image(cards):
-    images = [Image.open(f'casinomania/images/{x}') for x in cards]
+async def cards_image(cards, userID):
+    cards = []
+    for i in range(2):
+        cards.append(random.choice(os.listdir('casinomania/images/cards/')))
+
+    # print(cards)
+    images = [Image.open(f'casinomania/images/cards/{x}') for x in cards]
     widths, heights = zip(*(i.size for i in images))
 
     total_width = sum(widths) + ((len(images)-1)*5)
@@ -16,6 +22,7 @@ async def cards_image(cards):
         new_im.paste(im, (x_offset, 0))
         x_offset += im.size[0]+5
 
-    new_im.save('test.jpg')
+    new_im.save(f'casinomania/images/hands/{userID}.jpg')
 
-    # return new_im
+    # return new_im.load()
+    return f'casinomania/images/hands/{userID}.jpg'
