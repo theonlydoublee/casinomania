@@ -1,0 +1,45 @@
+import lightbulb, hikari
+import random
+
+from casinomania.functions import createImages
+from casinomania.functions.simpleFunctions import getCardName
+bjJoin = lightbulb.Plugin("bjJoin")
+
+
+@bjJoin.listener(lightbulb.CommandErrorEvent)
+async def joinEvent(event: hikari.InteractionCreateEvent) -> None:
+    # Filter out all unwanted interactions
+    print(event)
+    if not isinstance(event.interaction, hikari.ComponentInteraction):
+        return
+
+    print(event.interaction.custom_id)
+
+    member = event.interaction.member
+    if event.interaction.custom_id == 'bjJoin':
+
+        event.app.d.bjPlayers = event.app.d.bjPlayers.append(member.id)
+        print(event.app.d.bjPlayers)
+        return
+
+    if event.interaction.custom_id == 'bjStart':
+
+
+
+        img = await createImages.cards_image(
+            [await getCardName(random.choice(event.app.d.cardValues), random.choice(event.app.d.suits)) for i in range(2)],
+            member.id, True)
+
+        startEmbed = hikari.Embed(title='Dealer Hand').set_thumbnail().set_image(img)
+
+        await msg.edit(content='', embed=startEmbed, replace_attachments=True, components=[])
+
+        await event.app.rest.create_message(ctx.channel_id, content='Start game logic')
+
+
+def load(bot: lightbulb.BotApp):
+    bot.add_plugin(bjJoin)
+
+
+def unload(bot: lightbulb.BotApp):
+    bot.remove_plugin(bjJoin)

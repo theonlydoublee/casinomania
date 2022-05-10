@@ -44,11 +44,16 @@ def create_bot() -> lightbulb.BotApp:
         # bot.reload_extensions('TestBot.Music.Commands')
 
     bot.load_extensions_from("./casinomania/Commands")
+    bot.load_extensions_from("./casinomania/plugins")
     # bot.load_extensions_from("./casinomania/Tasks")
-    # bot.load_extensions_from("./casinomania/Listeners")
+    bot.load_extensions_from("./casinomania/Listeners")
 
     # Loads tasks and autostart tasks will start
     # tasks.load(bot)
+
+    bot.d.cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace']
+    bot.d.suits = ['clubs', 'hearts', 'spades', 'diamonds']
+
     return bot
 
 
