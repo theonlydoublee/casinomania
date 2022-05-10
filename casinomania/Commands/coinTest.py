@@ -11,7 +11,7 @@ coinPL = lightbulb.Plugin("coinPL")
 
 
 @coinPL.command()
-@lightbulb.option('count', 'The amount of coins to add', type=int, min_value=1)
+@lightbulb.option('count', 'The amount of coins to add', type=int, min_value=1, max_value=2000)
 @lightbulb.command("add", "add coins to self")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def cmd_add(ctx: lightbulb.context.Context):

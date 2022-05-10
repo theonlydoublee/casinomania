@@ -8,6 +8,13 @@ async def getCardName(num, suit):
 
 async def addCoins(guildID, userID, count):
     data = readWrite.readGuildFile(guildID)
+
+    try:
+        data[str(userID)]
+    except:
+        readWrite.setGuildFile(guildID, userID, 100)
+        data = readWrite.readGuildFile(guildID)
+
     print(str(data[str(userID)]))
     total = count + int(data[str(userID)])
     readWrite.setGuildFile(guildID=guildID, userID=userID, ccTotal=total)
