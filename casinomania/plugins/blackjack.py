@@ -62,7 +62,7 @@ async def cmd_Start(ctx: lightbulb.context.Context):
         if event.interaction.custom_id == 'bjStart':
             print('start BJ')
             test = False
-            await event.app.rest.create_interaction_response(event.interaction.id, content='Started', token=event.interaction.token, response_type=4)
+            # await event.app.rest.create_interaction_response(event.interaction.id, content='Started', token=event.interaction.token, response_type=4)
             # break
         else:
             member = event.interaction.member
@@ -86,19 +86,54 @@ async def cmd_Start(ctx: lightbulb.context.Context):
             players = blackjackPL.bot.d.bjPLayers
 
     # print('gjfdshgkjsliud')
-    print(players)
+    # print(players)
 
-    img = await createImages.cards_image(
-        [await getCardName(random.choice(ctx.bot.d.cardValues), random.choice(ctx.bot.d.suits)) for i in range(2)],
-        ctx.user.id, True)
+    deck = []
+    for i in range(2):
+        for card in ctx.bot.d.cardValues:
+            for suit in ctx.bot.d.suits:
+                deck.append({'value': f'{card}', 'suit':f'{suit}'})
+
+    random.shuffle(deck)
+    # for i in range(10):
+    #     print(random.choice(deck))
+    dealerHand = []
+
+    for i in range(2):
+        card = random.choice(deck)
+        dealerHand.append(card)
+        deck.remove(card)
+
+    # print(len(deck))
+    print(dealerHand)
+
+    dealerCardNames = []
+    for card in dealerHand:
+        dealerCardNames.append(await getCardName(card['value'], card['suit']))
+    img = await createImages.cards_image(dealerCardNames, ctx.bot.get_me().id, True)
 
     startEmbed = hikari.Embed(title='Dealer Hand').set_thumbnail().set_image(img)
 
-    await msg.edit(content='', embed=startEmbed, replace_attachments=True, components=[])
+    dealerMsg = await msg.edit(content='', embed=startEmbed, replace_attachments=True, components=[])
 
     # await event.app.rest.create_message(ctx.channel_id, content='Start game logic')
 
     # do a for loop for players list for playing one at a time and only allow that user to interact
+    playerValues = []
+    for player in players:
+        hand = []
+        for i in range(2):
+            card = random.choice(deck)
+            hand.append(card)
+            deck.remove(card)
+        playerCardNames = []
+        for card in hand:
+            playerCardNames.append(await getCardName(card['value'], card['suit']))
+
+        player = await ctx.bot.rest.fetch_member(ctx.guild_id, player)
+        img = await createImages.cards_image(playerCardNames, player.user.id)
+        handEmbed = hikari.Embed(title=player.user.username).set_image(img)
+        handMsg = await ctx.bot.rest.create_message(channel=ctx.channel_id, content='', embed=handEmbed)
 
 
 def load(bot: lightbulb.BotApp):

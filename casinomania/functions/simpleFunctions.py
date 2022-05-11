@@ -22,6 +22,12 @@ async def addCoins(guildID, userID, count):
 
 async def remCoins(guildID, userID, count):
     data = readWrite.readGuildFile(guildID)
+    try:
+        data[str(userID)]
+    except:
+        readWrite.setGuildFile(guildID, userID, 0)
+        data = readWrite.readGuildFile(guildID)
+
     print(str(data[str(userID)]))
     total = int(data[str(userID)]) - count
     if total < 0:

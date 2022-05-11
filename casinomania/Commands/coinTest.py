@@ -20,7 +20,7 @@ async def cmd_add(ctx: lightbulb.context.Context):
     await addCoins(ctx.guild_id, ctx.user.id, count)
 
     totalData = readWrite.readGuildFile(ctx.guild_id)
-    print(totalData)
+    # print(totalData)
     total = totalData[str(ctx.user.id)]
 
     await ctx.respond(f'Added {count} coins to you\nYou now have {total} coins')
