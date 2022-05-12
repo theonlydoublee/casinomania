@@ -1,4 +1,5 @@
 from casinomania.functions import readWrite
+import numpy as np
 
 
 async def getCardName(num, suit):
@@ -12,12 +13,12 @@ async def addCoins(guildID, userID, count):
     try:
         data[str(userID)]
     except:
-        readWrite.setGuildFile(guildID, userID, 100)
+        readWrite.setCCTotal(guildID, userID, 100)
         data = readWrite.readGuildFile(guildID)
 
     print(str(data[str(userID)]))
-    total = count + int(data[str(userID)])
-    readWrite.setGuildFile(guildID=guildID, userID=userID, ccTotal=total)
+    total = count + int(data[str(userID)]['coins'])
+    readWrite.setCCTotal(guildID=guildID, userID=userID, ccTotal=total)
 
 
 async def remCoins(guildID, userID, count):
@@ -25,12 +26,67 @@ async def remCoins(guildID, userID, count):
     try:
         data[str(userID)]
     except:
-        readWrite.setGuildFile(guildID, userID, 0)
+        readWrite.setCCTotal(guildID, userID, 0)
         data = readWrite.readGuildFile(guildID)
 
-    print(str(data[str(userID)]))
-    total = int(data[str(userID)]) - count
+    # print(str(data[str(userID)]))
+    total = int(data[str(userID)]['coins']) - count
     if total < 0:
         total = 0
-    readWrite.setGuildFile(guildID=guildID, userID=userID, ccTotal=total)
+    readWrite.setCCTotal(guildID=guildID, userID=userID, ccTotal=total)
 
+
+async def getTotValue(hand):
+    total = 0
+    num_aces = 0
+    for card in hand:
+        value = card['value']
+        if isinstance(value, int):
+            total += value
+        else:
+            if value in ['jack', 'queen', 'king']:
+                total += 10
+            else:
+                # if total <= 10:
+                #     total += 11
+                # else:
+                #     total += 1
+                num_aces += 1
+
+    aceHandVals = ace_values(num_aces)
+    temp_total = []
+    for val in aceHandVals:
+        temp_total.append(val + total)
+
+    toRemove = []
+    for tot in temp_total:
+        if tot > 21:
+            toRemove.append(tot)
+    for item in toRemove:
+        temp_total.remove(item)
+    # print(f'List - {temp_total}')
+
+    if len(temp_total) == 0:
+        return 100
+    return max(temp_total)
+
+    # return total
+
+
+def get_ace_values(temp_list):
+    sum_array = np.zeros((2**len(temp_list), len(temp_list)))
+    # This loop gets the permutations
+    for i in range(len(temp_list)):
+        n = len(temp_list) - i
+        half_len = int(2**n * 0.5)
+        for rep in range(int(sum_array.shape[0]/half_len/2)):
+            sum_array[rep*2**n : rep*2**n+half_len, i]=1
+            sum_array[rep*2**n+half_len : rep*2**n+half_len*2, i]=11
+    return [int(s) for s in np.sum(sum_array, axis=1)]
+
+
+def ace_values(num_aces):
+    temp_list = []
+    for i in range(num_aces):
+        temp_list.append([1,11])
+    return get_ace_values(temp_list)

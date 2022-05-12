@@ -21,7 +21,7 @@ async def cmd_add(ctx: lightbulb.context.Context):
 
     totalData = readWrite.readGuildFile(ctx.guild_id)
     # print(totalData)
-    total = totalData[str(ctx.user.id)]
+    total = totalData[str(ctx.user.id)]['coins']
 
     await ctx.respond(f'Added {count} coins to you\nYou now have {total} coins')
 
@@ -36,8 +36,8 @@ async def cmd_rem(ctx: lightbulb.context.Context):
     await remCoins(ctx.guild_id, ctx.user.id, count)
 
     totalData = readWrite.readGuildFile(ctx.guild_id)
-    print(totalData)
-    total = totalData[str(ctx.user.id)]
+    # print(totalData)
+    total = totalData[str(ctx.user.id)]['coins']
 
     await ctx.respond(f'Removed {count} coins from you\nYou now have {total} coins')
 

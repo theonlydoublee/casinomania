@@ -1,8 +1,10 @@
+from asyncio import sleep
+
 import hikari, lightbulb
 import random
 
 from casinomania.functions import createImages
-from casinomania.functions.simpleFunctions import getCardName
+from casinomania.functions.simpleFunctions import getCardName, getTotValue
 
 blackjackPL = lightbulb.Plugin('blackjackPL')
 
@@ -41,14 +43,14 @@ async def cmd_Start(ctx: lightbulb.context.Context):
     resp = await ctx.respond(bjEmbed, component=bjBtns)
     msg = await resp.message()
 
-    test = True
+    starting = True
     blackjackPL.bot.d.bjPLayers = []
     # ctx.bot.d.bjPLayers.append('test')
     # print(blackjackPL.bot.d.bjPLayers)
     players = []
     event = None
     # print(type(ctx.bot.d.bjPLayers))
-    while test:
+    while starting:
         event = await ctx.bot.wait_for(
             hikari.InteractionCreateEvent,
             timeout=30,
@@ -61,7 +63,7 @@ async def cmd_Start(ctx: lightbulb.context.Context):
         )
         if event.interaction.custom_id == 'bjStart':
             print('start BJ')
-            test = False
+            starting = False
             # await event.app.rest.create_interaction_response(event.interaction.id, content='Started', token=event.interaction.token, response_type=4)
             # break
         else:
@@ -92,7 +94,7 @@ async def cmd_Start(ctx: lightbulb.context.Context):
     for i in range(2):
         for card in ctx.bot.d.cardValues:
             for suit in ctx.bot.d.suits:
-                deck.append({'value': f'{card}', 'suit':f'{suit}'})
+                deck.append({'value': card, 'suit': f'{suit}'})
 
     random.shuffle(deck)
     # for i in range(10):
@@ -118,9 +120,31 @@ async def cmd_Start(ctx: lightbulb.context.Context):
 
     # await event.app.rest.create_message(ctx.channel_id, content='Start game logic')
 
-    # do a for loop for players list for playing one at a time and only allow that user to interact
+    plrButtons = [
+        {'label': 'Hit', 'value': 'bjHit'},
+        {'label': 'Stand', 'value': 'bjStand'},
+    ]
+    plrBtns = ctx.bot.rest.build_action_row()
+
+    for btn in plrButtons:
+        (
+            # Adding the buttons into the action row.
+            plrBtns.add_button(
+                # Gray button style, see also PRIMARY, and DANGER.
+                hikari.ButtonStyle.SECONDARY,
+                # Set the buttons custom ID to the label.
+                btn['value'],
+            )
+                # Set the actual label.
+                .set_label(btn['label'])
+                # Finally add the button to the container.
+                .add_to_container()
+        )
+
     playerValues = []
+    handMsg = None
     for player in players:
+        playing = True
         hand = []
         for i in range(2):
             card = random.choice(deck)
@@ -133,7 +157,88 @@ async def cmd_Start(ctx: lightbulb.context.Context):
         player = await ctx.bot.rest.fetch_member(ctx.guild_id, player)
         img = await createImages.cards_image(playerCardNames, player.user.id)
         handEmbed = hikari.Embed(title=player.user.username).set_image(img)
-        handMsg = await ctx.bot.rest.create_message(channel=ctx.channel_id, content='', embed=handEmbed)
+        handMsg = await ctx.bot.rest.create_message(channel=ctx.channel_id, content='', embed=handEmbed, component=plrBtns)
+        cardTotal = 0
+        interaction = None
+        token = None
+        while playing:
+            custID = 'bjStand'
+
+            if cardTotal < 21:
+                event2 = await ctx.bot.wait_for(
+                    hikari.InteractionCreateEvent,
+                    timeout=30,
+                    predicate=lambda e:
+                    isinstance(e.interaction, hikari.ComponentInteraction)
+                    and e.interaction.user.id == player.id
+                    and e.interaction.message.id == handMsg.id
+                    and e.interaction.component_type == hikari.ComponentType.BUTTON
+                    # and e.interaction.custom_id == 'bjStart'
+                )
+                interaction = event2.interaction
+                token = event2.interaction.token
+                custID = event2.interaction.custom_id
+
+            else:
+                custID = 'bjStand'
+
+            if custID == 'bjStand':
+                try:
+                    await ctx.app.rest.create_interaction_response(interaction, token, response_type=4, content='Standing', flags=hikari.MessageFlag.EPHEMERAL)
+                except:
+                    pass
+                print(player.user.username + " Stood")
+                playing = False
+                # break
+            elif custID == 'bjHit':
+                await ctx.app.rest.create_interaction_response(interaction, token, response_type=4, content='Hitting', flags=hikari.MessageFlag.EPHEMERAL)
+
+                print(player.user.username + " is Hitting")
+                card = random.choice(deck)
+                hand.append(card)
+                deck.remove(card)
+                # print(hand)
+                playerCardNames.append(await getCardName(card['value'], card['suit']))
+                # print(playerCardNames)
+                img2 = await createImages.cards_image(playerCardNames, player.user.id)
+                handEmbed2 = hikari.Embed(title=player.user.username).set_image(img2)
+                await handMsg.edit(content='', embed=handEmbed2, component=plrBtns, replace_attachments=True)
+
+            cardTotal = await getTotValue(hand)
+
+        playerValues.append({"player": player, "cardTotal": cardTotal})
+        await handMsg.delete()
+
+    for ply in playerValues:
+        print(ply["player"].user.username + " " + str(ply['cardTotal']))
+    # print(playerValues)
+
+    dealerPlay = True
+    dealerTotal = 0
+    while dealerPlay:
+
+        dealerTotal = await getTotValue(dealerHand)
+
+        if dealerTotal < 17:
+            card = random.choice(deck)
+            dealerHand.append(card)
+            deck.remove(card)
+            dealerCardNames.append(await getCardName(card['value'], card['suit']))
+        else:
+            dealerPlay = False
+
+        # for card in dealerHand:
+        #     dealerCardNames.append(await getCardName(card['value'], card['suit']))
+
+    print(f'Dealer {dealerTotal}')
+
+    img3 = await createImages.cards_image(dealerCardNames, ctx.bot.get_me().id)
+
+    dealerEmbed = hikari.Embed(title='Dealer Hand').set_thumbnail().set_image(img3)
+
+    await dealerMsg.edit(content='', embed=dealerEmbed, replace_attachments=True, components=[])
+    await sleep(10)
+    await dealerMsg.delete()
 
 
 def load(bot: lightbulb.BotApp):

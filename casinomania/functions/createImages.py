@@ -1,5 +1,3 @@
-import sys
-import random, os
 from PIL import Image
 
 

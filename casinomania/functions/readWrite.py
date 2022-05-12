@@ -24,9 +24,33 @@ def writeGuildFile(data, guildID):
         file.close()
 
 
-def setGuildFile(guildID, userID, ccTotal):
+def setCCTotal(guildID, userID, ccTotal):
     data = readGuildFile(guildID)
-    data[str(userID)] = ccTotal
+    data[str(userID)]['coins'] = ccTotal
     # print(data)
     # print(f"set: {data}")
     writeGuildFile(data, guildID)
+
+
+def getCCTotal(guildID, userID):
+    data = readGuildFile(guildID)
+    total = data[str(userID)]['coins']
+    # print(data)
+    # print(f"set: {data}")
+    return total
+
+
+def setBet(guildID, userID, betAmount):
+    data = readGuildFile(guildID)
+    data[str(userID)]['bet'] = betAmount
+    # print(data)
+    # print(f"set: {data}")
+    writeGuildFile(data, guildID)
+
+
+def getBet(guildID, userID):
+    data = readGuildFile(guildID)
+    total = data[str(userID)]['bet']
+    # print(data)
+    # print(f"set: {data}")
+    return total
