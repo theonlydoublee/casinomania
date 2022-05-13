@@ -12,11 +12,11 @@ async def joinEvent(event: hikari.events.MemberCreateEvent) -> None:
     # if not isinstance(event.interaction, hikari.ComponentInteraction):
     #     return
 
-    memberID = event.member.user.id
+    memberID = str(event.member.user.id)
     data = readGuildFile(event.guild_id)
-
-    data[str(memberID)]['coins'] = 100
-    data[str(memberID)]['bet'] = 10
+    # data[str(memberID)] = memberID
+    data[str(memberID)] = {'coins': 100, 'bet': 10}
+    # data[str(memberID)]['bet'] = 10
 
     writeGuildFile(data, event.guild_id)
 
