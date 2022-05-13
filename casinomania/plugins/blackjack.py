@@ -4,7 +4,8 @@ import hikari, lightbulb
 import random
 
 from casinomania.functions import createImages
-from casinomania.functions.simpleFunctions import getCardName, getTotValue
+from casinomania.functions.simpleFunctions import getCardName, getTotValue, addCoins, remCoins
+from casinomania.functions.readWrite import getBet,setBet,setCCTotal,getCCTotal
 
 blackjackPL = lightbulb.Plugin('blackjackPL')
 
@@ -207,6 +208,7 @@ async def cmd_Start(ctx: lightbulb.context.Context):
             cardTotal = await getTotValue(hand)
 
         playerValues.append({"player": player, "cardTotal": cardTotal})
+        await sleep(1)
         await handMsg.delete()
 
     for ply in playerValues:
@@ -237,8 +239,35 @@ async def cmd_Start(ctx: lightbulb.context.Context):
     dealerEmbed = hikari.Embed(title='Dealer Hand').set_thumbnail().set_image(img3)
 
     await dealerMsg.edit(content='', embed=dealerEmbed, replace_attachments=True, components=[])
+
+    winningsEmbed = hikari.Embed(title='Winnings')
+    for player in playerValues:
+        guildID = ctx.guild_id
+        playerID = player['player'].user.id
+        outcome = ''
+        ccTotal = 0
+        handTotal = player['cardTotal']
+        if handTotal > 21:
+            outcome = 'Busted'
+            await remCoins(guildID, playerID, getBet(guildID, playerID))
+            ccTotal = getCCTotal(guildID, playerID)
+        elif (handTotal > dealerTotal) or dealerTotal == 100:
+            outcome = 'Won'
+            await addCoins(guildID, playerID, getBet(guildID, playerID))
+            ccTotal = getCCTotal(guildID, playerID)
+        elif handTotal < dealerTotal:
+            outcome = 'Lost'
+            await remCoins(guildID, playerID, getBet(guildID, playerID))
+            ccTotal = getCCTotal(guildID, playerID)
+        setCCTotal(guildID, playerID, ccTotal)
+        winningsEmbed.add_field(name=f"{player['player'].user.username} - {outcome}", value=f'Now has {ccTotal} CasinoCoins')
+
+    winningsMsg = await ctx.bot.rest.create_message(ctx.channel_id, content='', embed=winningsEmbed)
+
     await sleep(10)
     await dealerMsg.delete()
+    await sleep(1)
+    await winningsMsg.delete()
 
 
 def load(bot: lightbulb.BotApp):
