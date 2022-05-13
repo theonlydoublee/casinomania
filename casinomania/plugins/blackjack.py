@@ -52,17 +52,26 @@ async def cmd_Start(ctx: lightbulb.context.Context):
     event = None
     # print(type(ctx.bot.d.bjPLayers))
     while starting:
-        event = await ctx.bot.wait_for(
-            hikari.InteractionCreateEvent,
-            timeout=30,
-            predicate=lambda e:
-            isinstance(e.interaction, hikari.ComponentInteraction)
-            # and e.interaction.user.id == ctx.author.id
-            and e.interaction.message.id == msg.id
-            and e.interaction.component_type == hikari.ComponentType.BUTTON
-            # and e.interaction.custom_id == 'bjStart'
-        )
-        if event.interaction.custom_id == 'bjStart':
+        token = None
+        interaction = None
+        try:
+            event = await ctx.bot.wait_for(
+                hikari.InteractionCreateEvent,
+                timeout=30,
+                predicate=lambda e:
+                isinstance(e.interaction, hikari.ComponentInteraction)
+                # and e.interaction.user.id == ctx.author.id
+                and e.interaction.message.id == msg.id
+                and e.interaction.component_type == hikari.ComponentType.BUTTON
+                # and e.interaction.custom_id == 'bjStart'
+            )
+            token = event.interaction.token
+            interaction = event.interaction
+            custID = event.interaction.custom_id
+        except:
+            custID = 'bjStart'
+
+        if custID == 'bjStart':
             print('start BJ')
             starting = False
             # await event.app.rest.create_interaction_response(event.interaction.id, content='Started', token=event.interaction.token, response_type=4)
@@ -77,12 +86,12 @@ async def cmd_Start(ctx: lightbulb.context.Context):
             memberID = member.id
             if memberID in players:
                 blackjackPL.bot.d.bjPLayers.pop(blackjackPL.bot.d.bjPLayers.index(memberID))
-                await event.app.rest.create_interaction_response(event.interaction.id, content='Left', token=event.interaction.token, response_type=4, flags=hikari.MessageFlag.EPHEMERAL)
+                await ctx.app.rest.create_interaction_response(interaction.id, content='Left', token=token, response_type=4, flags=hikari.MessageFlag.EPHEMERAL)
                 print(f'{member.user} left')
 
             else:
                 blackjackPL.bot.d.bjPLayers.append(memberID)
-                await event.app.rest.create_interaction_response(event.interaction.id, content='Joined', token=event.interaction.token, response_type=4, flags=hikari.MessageFlag.EPHEMERAL)
+                await ctx.app.rest.create_interaction_response(event.interaction.id, content='Joined', token=token, response_type=4, flags=hikari.MessageFlag.EPHEMERAL)
                 print(f'{member.user} joined')
 
             # print(blackjackPL.bot.d.bjPLayers)
@@ -108,7 +117,7 @@ async def cmd_Start(ctx: lightbulb.context.Context):
         deck.remove(card)
 
     # print(len(deck))
-    print(dealerHand)
+    # print(dealerHand)
 
     dealerCardNames = []
     for card in dealerHand:
@@ -166,19 +175,23 @@ async def cmd_Start(ctx: lightbulb.context.Context):
             custID = 'bjStand'
 
             if cardTotal < 21:
-                event2 = await ctx.bot.wait_for(
-                    hikari.InteractionCreateEvent,
-                    timeout=30,
-                    predicate=lambda e:
-                    isinstance(e.interaction, hikari.ComponentInteraction)
-                    and e.interaction.user.id == player.id
-                    and e.interaction.message.id == handMsg.id
-                    and e.interaction.component_type == hikari.ComponentType.BUTTON
-                    # and e.interaction.custom_id == 'bjStart'
-                )
-                interaction = event2.interaction
-                token = event2.interaction.token
-                custID = event2.interaction.custom_id
+                try:
+                    event2 = await ctx.bot.wait_for(
+                        hikari.InteractionCreateEvent,
+                        timeout=30,
+                        predicate=lambda e:
+                        isinstance(e.interaction, hikari.ComponentInteraction)
+                        and e.interaction.user.id == player.id
+                        and e.interaction.message.id == handMsg.id
+                        and e.interaction.component_type == hikari.ComponentType.BUTTON
+                        # and e.interaction.custom_id == 'bjStart'
+                    )
+                    interaction = event2.interaction
+                    token = event2.interaction.token
+                    custID = event2.interaction.custom_id
+                except:
+                    custID = 'bjStand'
+                    pass
 
             else:
                 custID = 'bjStand'
@@ -250,6 +263,9 @@ async def cmd_Start(ctx: lightbulb.context.Context):
         if handTotal > 21:
             outcome = 'Busted'
             await remCoins(guildID, playerID, getBet(guildID, playerID))
+            ccTotal = getCCTotal(guildID, playerID)
+        elif handTotal == dealerTotal:
+            outcome = 'Tied'
             ccTotal = getCCTotal(guildID, playerID)
         elif (handTotal > dealerTotal) or dealerTotal == 100:
             outcome = 'Won'

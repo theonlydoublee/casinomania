@@ -16,7 +16,7 @@ async def addCoins(guildID, userID, count):
         readWrite.setCCTotal(guildID, userID, 100)
         data = readWrite.readGuildFile(guildID)
 
-    print(str(data[str(userID)]))
+    # print(str(data[str(userID)]))
     total = count + int(data[str(userID)]['coins'])
     readWrite.setCCTotal(guildID=guildID, userID=userID, ccTotal=total)
 
