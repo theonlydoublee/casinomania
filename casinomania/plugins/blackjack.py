@@ -45,7 +45,7 @@ async def cmd_Start(ctx: lightbulb.context.Context):
     msg = await resp.message()
 
     starting = True
-    blackjackPL.bot.d.bjPLayers = []
+    # blackjackPL.bot.d.bjPLayers = []
     # ctx.bot.d.bjPLayers.append('test')
     # print(blackjackPL.bot.d.bjPLayers)
     players = []
@@ -85,17 +85,17 @@ async def cmd_Start(ctx: lightbulb.context.Context):
             # ctx.bot.d.bjPLayers = list
             memberID = member.id
             if memberID in players:
-                blackjackPL.bot.d.bjPLayers.pop(blackjackPL.bot.d.bjPLayers.index(memberID))
+                players.remove(memberID)
                 await ctx.app.rest.create_interaction_response(interaction.id, content='Left', token=token, response_type=4, flags=hikari.MessageFlag.EPHEMERAL)
                 print(f'{member.user} left')
 
             else:
-                blackjackPL.bot.d.bjPLayers.append(memberID)
+                players.append(memberID)
                 await ctx.app.rest.create_interaction_response(event.interaction.id, content='Joined', token=token, response_type=4, flags=hikari.MessageFlag.EPHEMERAL)
                 print(f'{member.user} joined')
 
             # print(blackjackPL.bot.d.bjPLayers)
-            players = blackjackPL.bot.d.bjPLayers
+            # players = blackjackPL.bot.d.bjPLayers
 
     # print('gjfdshgkjsliud')
     # print(players)
@@ -224,10 +224,6 @@ async def cmd_Start(ctx: lightbulb.context.Context):
         await sleep(1)
         await handMsg.delete()
 
-    for ply in playerValues:
-        print(ply["player"].user.username + " " + str(ply['cardTotal']))
-    # print(playerValues)
-
     dealerPlay = True
     dealerTotal = 0
     while dealerPlay:
@@ -242,9 +238,8 @@ async def cmd_Start(ctx: lightbulb.context.Context):
         else:
             dealerPlay = False
 
-        # for card in dealerHand:
-        #     dealerCardNames.append(await getCardName(card['value'], card['suit']))
-
+    for ply in playerValues:
+        print(ply["player"].user.username + " " + str(ply['cardTotal']))
     print(f'Dealer {dealerTotal}')
 
     img3 = await createImages.cards_image(dealerCardNames, ctx.bot.get_me().id)

@@ -8,7 +8,7 @@ bjJoin = lightbulb.Plugin("bjJoin")
 @bjJoin.listener(hikari.events.MemberCreateEvent)
 async def joinEvent(event: hikari.events.MemberCreateEvent) -> None:
     # Filter out all unwanted interactions
-    print(event)
+    # print(event)
     # if not isinstance(event.interaction, hikari.ComponentInteraction):
     #     return
 
