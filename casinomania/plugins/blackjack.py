@@ -4,7 +4,7 @@ import hikari, lightbulb
 import random
 
 from casinomania.functions import createImages
-from casinomania.functions.simpleFunctions import getCardName, getTotValue, addCoins, remCoins
+from casinomania.functions.simpleFunctions import getCardName, getTotValue, addCoins, remCoins, create_Decks, make_hand
 from casinomania.functions.readWrite import getBet,setBet,setCCTotal,getCCTotal
 
 blackjackPL = lightbulb.Plugin('blackjackPL')
@@ -94,21 +94,8 @@ async def cmd_Start(ctx: lightbulb.context.Context):
                 await ctx.app.rest.create_interaction_response(event.interaction.id, content='Joined', token=token, response_type=4, flags=hikari.MessageFlag.EPHEMERAL)
                 print(f'{member.user} joined')
 
-            # print(blackjackPL.bot.d.bjPLayers)
-            # players = blackjackPL.bot.d.bjPLayers
-
-    # print('gjfdshgkjsliud')
-    # print(players)
-
-    deck = []
-    for i in range(2):
-        for card in ctx.bot.d.cardValues:
-            for suit in ctx.bot.d.suits:
-                deck.append({'value': card, 'suit': f'{suit}'})
-
+    deck = create_Decks(2, ctx)
     random.shuffle(deck)
-    # for i in range(10):
-    #     print(random.choice(deck))
     dealerHand = []
 
     for i in range(2):
@@ -116,12 +103,9 @@ async def cmd_Start(ctx: lightbulb.context.Context):
         dealerHand.append(card)
         deck.remove(card)
 
-    # print(len(deck))
-    # print(dealerHand)
-
-    dealerCardNames = []
-    for card in dealerHand:
-        dealerCardNames.append(await getCardName(card['value'], card['suit']))
+    dealerCardNames = await make_hand(dealerHand)
+    # for card in dealerHand:
+    #     dealerCardNames.append(await getCardName(card['value'], card['suit']))
     img = await createImages.cards_image(dealerCardNames, ctx.bot.get_me().id, True)
 
     startEmbed = hikari.Embed(title='Dealer Hand').set_thumbnail().set_image(img)
@@ -171,9 +155,11 @@ async def cmd_Start(ctx: lightbulb.context.Context):
         cardTotal = 0
         interaction = None
         token = None
+        cardTotal = await getTotValue(hand)
+
         while playing:
             custID = 'bjStand'
-
+            print(cardTotal)
             if cardTotal < 21:
                 try:
                     event2 = await ctx.bot.wait_for(

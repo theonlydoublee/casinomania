@@ -11,13 +11,20 @@ async def addCoins(guildID, userID, count):
     data = readWrite.readGuildFile(guildID)
 
     try:
-        data[str(userID)]
+        data = readWrite.readGuildFile(guildID)
     except:
         readWrite.setCCTotal(guildID, userID, 100)
         data = readWrite.readGuildFile(guildID)
 
+    wallet = data[str(userID)]['coins']
+
     # print(str(data[str(userID)]))
-    total = count + int(data[str(userID)]['coins'])
+    total = count + int(wallet)
+    if wallet == 0:
+        total = 5
+        # data[str(userID)]['bet'] = 5
+        readWrite.setBet(guildID,userID,5)
+
     readWrite.setCCTotal(guildID=guildID, userID=userID, ccTotal=total)
 
 
@@ -26,14 +33,25 @@ async def remCoins(guildID, userID, count):
     try:
         data[str(userID)]
     except:
-        readWrite.setCCTotal(guildID, userID, 0)
+        readWrite.setCCTotal(guildID, str(userID), 100)
         data = readWrite.readGuildFile(guildID)
+        pass
 
     # print(str(data[str(userID)]))
     total = int(data[str(userID)]['coins']) - count
     if total < 0:
         total = 0
-    readWrite.setCCTotal(guildID=guildID, userID=userID, ccTotal=total)
+    readWrite.setCCTotal(guildID=guildID, userID=str(userID), ccTotal=total)
+
+    data = readWrite.readGuildFile(guildID)
+    bet = data[str(userID)]['bet']
+    wallet = data[str(userID)]['coins']
+    # print(bet, wallet)
+    if bet > wallet:
+        print(data[str(userID)])
+        data[str(userID)]['bet'] = wallet
+        readWrite.setBet(guildID, str(userID), wallet)
+        # readWrite.writeGuildFile(data, guildID)
 
 
 async def getTotValue(hand):
@@ -90,3 +108,19 @@ def ace_values(num_aces):
     for i in range(num_aces):
         temp_list.append([1,11])
     return get_ace_values(temp_list)
+
+
+def create_Decks(numDecks, ctx):
+    deck = []
+    for i in range(numDecks):
+        for card in ctx.bot.d.cardValues:
+            for suit in ctx.bot.d.suits:
+                deck.append({'value': card, 'suit': f'{suit}'})
+    return deck
+
+
+async def make_hand(hand):
+    cardNames = []
+    for card in hand:
+        cardNames.append(await getCardName(card['value'], card['suit']))
+    return cardNames

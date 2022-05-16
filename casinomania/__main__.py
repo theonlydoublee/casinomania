@@ -52,8 +52,8 @@ def create_bot() -> lightbulb.BotApp:
     # Loads tasks and autostart tasks will start
     # tasks.load(bot)
 
-    bot.d.cardValues = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'jack', 'queen', 'king', 'ace']
-    # bot.d.cardValues = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'jack', 'queen', 'king']
+    # bot.d.cardValues = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'jack', 'queen', 'king', 'ace']
+    bot.d.cardValues = ['king', 'ace']
     bot.d.suits = ['clubs', 'hearts', 'spades', 'diamonds']
 
     return bot
