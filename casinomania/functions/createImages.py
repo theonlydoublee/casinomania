@@ -1,7 +1,9 @@
+import os
+
 from PIL import Image
 
 
-async def cards_image(cards, userID, hide=False):
+async def cards_image(cards, userID, guildID, hide=False):
     # cards = []
     # for i in range(2):
     #     cards.append(random.choice(os.listdir('casinomania/images/cards/')))
@@ -21,8 +23,9 @@ async def cards_image(cards, userID, hide=False):
     for im in images:
         new_im.paste(im, (x_offset, 0))
         x_offset += im.size[0]+5
+    os.makedirs(f'casinomania/images/hands/{guildID}/', exist_ok=True)
 
-    new_im.save(f'casinomania/images/hands/{userID}.jpg')
+    new_im.save(f'casinomania/images/hands/{guildID}/{userID}.jpg')
 
     # return new_im.load()
-    return f'casinomania/images/hands/{userID}.jpg'
+    return f'casinomania/images/hands/{guildID}/{userID}.jpg'

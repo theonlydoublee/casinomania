@@ -3,22 +3,26 @@ import os
 
 
 def readGuildFile(guildID):
-    if not os.path.exists(f'casinomania/Data/{guildID}.json'):
-        with open(f'casinomania/Data/{guildID}.json', 'w') as file:
+    os.makedirs(f'casinomania/Data/{guildID}', exist_ok=True)
+
+    if not os.path.exists(f'casinomania/Data/{guildID}/{guildID}.json'):
+        with open(f'casinomania/Data/{guildID}/{guildID}.json', 'w') as file:
             data = {
                         # userID: 100
                     }
             json.dump(data, file, indent=2)
         file.close()
 
-    with open(f'casinomania/Data/{guildID}.json', 'r') as file:
+    with open(f'casinomania/Data/{guildID}/{guildID}.json', 'r') as file:
         data = json.loads(file.read())
         # print(f"reading: {data}")
         return data
 
 
 def writeGuildFile(data, guildID):
-    with open(f'casinomania/Data/{guildID}.json', 'w') as file:
+    os.makedirs(f'casinomania/Data/{guildID}', exist_ok=True)
+
+    with open(f'casinomania/Data/{guildID}/{guildID}.json', 'w') as file:
         json.dump(data, file, indent=2)
         # print(f"writing: {data}")
         file.close()

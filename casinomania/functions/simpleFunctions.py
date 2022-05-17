@@ -8,7 +8,7 @@ async def getCardName(num, suit):
 
 
 async def addCoins(guildID, userID, count):
-    data = readWrite.readGuildFile(guildID)
+    data = None
 
     try:
         data = readWrite.readGuildFile(guildID)
@@ -110,11 +110,11 @@ def ace_values(num_aces):
     return get_ace_values(temp_list)
 
 
-def create_Decks(numDecks, ctx):
+def create_Decks(numDecks, bot):
     deck = []
     for i in range(numDecks):
-        for card in ctx.bot.d.cardValues:
-            for suit in ctx.bot.d.suits:
+        for card in bot.d.cardValues:
+            for suit in bot.d.suits:
                 deck.append({'value': card, 'suit': f'{suit}'})
     return deck
 
