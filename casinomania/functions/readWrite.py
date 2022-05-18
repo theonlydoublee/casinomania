@@ -8,7 +8,10 @@ def readGuildFile(guildID):
     if not os.path.exists(f'casinomania/Data/{guildID}/{guildID}.json'):
         with open(f'casinomania/Data/{guildID}/{guildID}.json', 'w') as file:
             data = {
-                        # userID: 100
+                    "bjMsg": {
+                        "id": "0",
+                        "channel": "0"
+                    }
                     }
             json.dump(data, file, indent=2)
         file.close()

@@ -20,10 +20,10 @@ def create_bot() -> lightbulb.BotApp:
     # GUILDS = (int(os.getenv("GUILD1")),
     #           # int(os.getenv("GUILD2"))
     #           )
-
+    intents = []
     bot = lightbulb.BotApp(
         token=TOKEN,
-        intents=hikari.Intents.GUILD_MEMBERS
+        intents=hikari.Intents.GUILD_MEMBERS | hikari.Intents.GUILDS
         # default_enabled_guilds=GUILDS,
         # help_slash_command=True,
     )

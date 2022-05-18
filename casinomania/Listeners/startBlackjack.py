@@ -13,9 +13,6 @@ bjStart = lightbulb.Plugin("bjStart", include_datastore=True)
 @bjStart.listener(hikari.events.InteractionCreateEvent)
 async def event_bjStart(eventS: hikari.events.InteractionCreateEvent) -> None:
 
-    # print(eventS.interaction)
-
-    # print(eventS.interaction.guild_id)
     intGuildID = eventS.interaction.guild_id
     if bjStart.d.playing:
         return

@@ -21,6 +21,20 @@ async def joinEvent(event: hikari.events.MemberCreateEvent) -> None:
     writeGuildFile(data, event.guild_id)
 
 
+@bjJoin.listener(hikari.GuildJoinEvent)
+async def joinedGuild(event: hikari.GuildJoinEvent):
+    guildID = event.guild_id
+    members = await event.app.rest.fetch_members(guildID)
+
+    data = readGuildFile(event.guild_id)
+
+    for member in members:
+        if not member.is_bot:
+            # print(member)
+            data[str(member.user.id)] = {'coins': 100, 'bet': 10}
+
+    writeGuildFile(data, guildID)
+
 def load(bot: lightbulb.BotApp):
     bot.add_plugin(bjJoin)
 
