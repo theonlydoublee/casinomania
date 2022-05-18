@@ -12,9 +12,14 @@ bjStart = lightbulb.Plugin("bjStart", include_datastore=True)
 
 @bjStart.listener(hikari.events.InteractionCreateEvent)
 async def event_bjStart(eventS: hikari.events.InteractionCreateEvent) -> None:
-
     intGuildID = eventS.interaction.guild_id
-    if bjStart.d.playing:
+
+    try:
+        bjStart.d.BJplaying[str(intGuildID)]
+    except:
+        bjStart.d.BJplaying[str(intGuildID)] = False
+
+    if bjStart.d.BJplaying[str(intGuildID)]:
         return
 
     if str(eventS.interaction.type) != "MESSAGE_COMPONENT":
@@ -25,7 +30,7 @@ async def event_bjStart(eventS: hikari.events.InteractionCreateEvent) -> None:
     if str(eventS.interaction.custom_id) != 'startBJ':
         return
 
-    bjStart.d.playing = True
+    bjStart.d.BJplaying[str(intGuildID)] = True
 
     data = readGuildFile(intGuildID)
     startMsgID = data['bjMsg']['id']
@@ -86,22 +91,22 @@ async def event_bjStart(eventS: hikari.events.InteractionCreateEvent) -> None:
     while starting:
         token = None
         interaction = None
-        # try:
-        event = await bjStart.bot.wait_for(
-            hikari.InteractionCreateEvent,
-            timeout=30,
-            predicate=lambda e:
-            isinstance(e.interaction, hikari.ComponentInteraction)
-            # and e.interaction.user.id == ctx.author.id
-            and e.interaction.message.id == msg.id
-            and e.interaction.component_type == hikari.ComponentType.BUTTON
-            # and e.interaction.custom_id == 'bjStart'
-        )
-        token = event.interaction.token
-        interaction = event.interaction
-        custID = event.interaction.custom_id
-        # except:
-        #     custID = 'bjStart'
+        try:
+            event = await bjStart.bot.wait_for(
+                hikari.InteractionCreateEvent,
+                timeout=30,
+                predicate=lambda e:
+                isinstance(e.interaction, hikari.ComponentInteraction)
+                # and e.interaction.user.id == ctx.author.id
+                and e.interaction.message.id == msg.id
+                and e.interaction.component_type == hikari.ComponentType.BUTTON
+                and (e.interaction.custom_id == 'bjStart' or e.interaction.custom_id == 'bjJoin')
+            )
+            token = event.interaction.token
+            interaction = event.interaction
+            custID = event.interaction.custom_id
+        except:
+            custID = 'bjStart'
 
         if custID == 'bjStart':
             print('start BJ')
@@ -329,12 +334,12 @@ async def event_bjStart(eventS: hikari.events.InteractionCreateEvent) -> None:
     )
     msgID = await bjStart.app.rest.fetch_message(message=startMsgID, channel=startChnID)
     await msgID.edit(component=btnBJ)
-    bjStart.d.playing = False
+    bjStart.d.BJplaying[str(intGuildID)] = False
 
 
 def load(bot: lightbulb.BotApp):
     bot.add_plugin(bjStart)
-    bjStart.d.playing = False
+    bjStart.d.BJplaying = {}
 
 
 def unload(bot: lightbulb.BotApp):
