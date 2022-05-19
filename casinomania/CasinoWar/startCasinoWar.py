@@ -132,10 +132,42 @@ async def event_cwStart(eventS: hikari.events.InteractionCreateEvent) -> None:
         offset += 1
         totPlayers -= 2  # Number of players for one deck
 
+    playerValues = []
+    handMsg = None
+
     deck = create_Decks(2 + offset, casinoWarStart.bot)
     random.shuffle(deck)
+    dealerHand = []
+    card = random.choice(deck)
+    dealerHand.append(card)
+    deck.remove(card)
 
     # Game Logic
+    # compare dealer hand to players
+    # Win logic, whoever has the higher hand wins
+    # Adds coins to users when winning
+    # Each player draws 1 card to their "deck" on game start
+    # Shows player their card then moves to next player shortly after
+    # Prints out the winners and amount won
+    dealerCardNames = await make_hand(dealerHand)
+    img = await createImages.cards_image(dealerCardNames, event.interaction.app.get_me().id, intGuildID, True)
+
+    startEmbed = hikari.Embed(title='Dealer Hand').set_thumbnail().set_image(img)
+
+    dealerMsg = await msg.edit(content='', embed=startEmbed, replace_attachments=True, components=[])
+
+    playerValues = []
+    handMsg = None
+    for player in players:
+        playing = True
+        hand = []
+        card = random.choice(deck)
+        hand.append(card)
+        deck.remove(card)
+        playerCardNames = []
+        for card in hand:
+            playerCardNames.append(await getCardName(card['value'], card['suit']))
+
     print('this is game logic running')
     await event.interaction.message.delete()
 

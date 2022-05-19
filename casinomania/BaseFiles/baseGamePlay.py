@@ -149,10 +149,10 @@ async def event_gameStart(eventS: hikari.events.InteractionCreateEvent) -> None:
             # Set the buttons custom ID to the label.
             f'start{gameShort}',
         )
-            # Set the actual label.
-            .set_label(f'Create {gameFull} Game').set_is_disabled(False)
-            # Finally add the button to the container.
-            .add_to_container()
+        # Set the actual label.
+        .set_label(f'Create {gameFull} Game').set_is_disabled(False)
+        # Finally add the button to the container.
+        .add_to_container()
     )
     msgID = await gameStartPL.app.rest.fetch_message(message=startMsgID, channel=startChnID)
     await msgID.edit(component=btnGame)
