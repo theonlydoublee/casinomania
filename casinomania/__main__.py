@@ -43,13 +43,11 @@ def create_bot() -> lightbulb.BotApp:
             bot.reload_extensions(c)
         await ctx.respond(content='Reloaded the plugins', flags=hikari.MessageFlag.EPHEMERAL)
 
-        # bot.reload_extensions('TestBot.Music.Commands')
+    bot.load_extensions_from("./casinomania/BaseFiles")
 
     bot.load_extensions_from("./casinomania/Commands")
     bot.load_extensions_from("./casinomania/Blackjack")
     bot.load_extensions_from("./casinomania/CasinoWar")
-
-
 
     # Loads tasks and autostart tasks will start
     # tasks.load(bot)
