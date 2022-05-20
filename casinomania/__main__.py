@@ -28,22 +28,23 @@ def create_bot() -> lightbulb.BotApp:
         # help_slash_command=True,
     )
 
-    @bot.command()
-    @lightbulb.add_checks(lightbulb.owner_only)
-    @lightbulb.command('reload', 'reload plugins')
-    @lightbulb.implements(lightbulb.SlashCommand)
-    async def cmd_reload(ctx: lightbulb.context.Context) -> None:
-        plugins = []
+    # @bot.command()
+    # @lightbulb.add_checks(lightbulb.owner_only)
+    # @lightbulb.command('reload', 'reload plugins')
+    # @lightbulb.implements(lightbulb.SlashCommand)
+    # async def cmd_reload(ctx: lightbulb.context.Context) -> None:
+    #     plugins = []
+    #
+    #     for e in bot.extensions:
+    #         plugins.append(e)
+    #
+    #     for c in plugins:
+    #         # print(c)
+    #         bot.reload_extensions(c)
+    #     await ctx.respond(content='Reloaded the plugins', flags=hikari.MessageFlag.EPHEMERAL)
 
-        for e in bot.extensions:
-            plugins.append(e)
-
-        for c in plugins:
-            # print(c)
-            bot.reload_extensions(c)
-        await ctx.respond(content='Reloaded the plugins', flags=hikari.MessageFlag.EPHEMERAL)
-
-    bot.load_extensions_from("./casinomania/BaseFiles")
+    # bot.load_extensions_from("./casinomania/BaseFiles")
+    bot.load_extensions_from("./casinomania/Listeners")
 
     bot.load_extensions_from("./casinomania/Commands")
     bot.load_extensions_from("./casinomania/Blackjack")

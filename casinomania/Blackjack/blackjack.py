@@ -13,6 +13,13 @@ async def cmd_IniBJ(ctx: lightbulb.Context):
     # await ctx.bot.rest.create_interaction_response(ctx.interaction, token=ctx.interaction.token, response_type=5)
     data = readGuildFile(ctx.guild_id)
 
+    channel = await ctx.bot.rest.fetch_channel(ctx.channel_id)
+    chName = channel.name
+
+    if chName != 'blackjack':
+        await ctx.respond('Not in Blackjack channel', flags=hikari.MessageFlag.EPHEMERAL)
+        return
+
     try:
         await ctx.bot.rest.fetch_message(data['bjMsg']['channel'], data['bjMsg']['id'])
 

@@ -167,10 +167,10 @@ async def event_bjStart(eventS: hikari.events.InteractionCreateEvent) -> None:
     # grab image names of cards in hand for dealer
     dealerCardNames = await make_hand(dealerHand)
     # create the image of dealers hand
-    img = await createImages.cards_image(dealerCardNames, event.interaction.app.get_me().id, intGuildID, True)
+    DealerImg = await createImages.cards_image(dealerCardNames, event.interaction.app.get_me().id, intGuildID, True)
 
     # create embed for msg to dealers hadn
-    startEmbed = hikari.Embed(title='Dealer Hand').set_thumbnail().set_image(img)
+    startEmbed = hikari.Embed(title='Dealer Hand').set_thumbnail().set_image(DealerImg)
 
     # edit msg to have dealer's hand
     dealerMsg = await msg.edit(content='', embed=startEmbed, replace_attachments=True, components=[])
@@ -221,7 +221,7 @@ async def event_bjStart(eventS: hikari.events.InteractionCreateEvent) -> None:
         # create image of player's hand
         img = await createImages.cards_image(playerCardNames, player.user.id, intGuildID)
         # create embed using player's hand and username
-        handEmbed = hikari.Embed(title=player.user.username).set_image(img)
+        handEmbed = hikari.Embed(title=player.user.username).set_image(img)#.set_thumbnail(DealerImg)
         # create the msg using the embed and btns
         handMsg = await event.interaction.app.rest.create_message(channel=startChnID, content='', embed=handEmbed,
                                                                   component=plrBtns)
@@ -301,7 +301,7 @@ async def event_bjStart(eventS: hikari.events.InteractionCreateEvent) -> None:
 
         # when player turn done, add to list for later use
         playerValues.append({"player": player, "cardTotal": cardTotal})
-        await sleep(0.3)  # wait 0.3 seconds
+        await sleep(1.5)  # wait 0.3 seconds
         await handMsg.delete()  # delete player hand, done so don't get rate limited on msg editing
 
     # initialize vals for dealers turn

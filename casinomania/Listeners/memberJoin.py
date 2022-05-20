@@ -12,6 +12,7 @@ async def joinEvent(event: hikari.events.MemberCreateEvent) -> None:
     # if not isinstance(event.interaction, hikari.ComponentInteraction):
     #     return
 
+    print('New member joined')
     memberID = str(event.member.user.id)
     data = readGuildFile(event.guild_id)
     # data[str(memberID)] = memberID
@@ -35,7 +36,9 @@ async def joinedGuild(event: hikari.GuildJoinEvent):
 
     writeGuildFile(data, guildID)
 
+
 def load(bot: lightbulb.BotApp):
+    print('loading listeners')
     bot.add_plugin(bjJoin)
 
 
