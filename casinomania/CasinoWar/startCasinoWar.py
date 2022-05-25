@@ -14,14 +14,14 @@ casinoWarStart = lightbulb.Plugin("cwStart", include_datastore=True)
 async def event_cwStart(eventS: hikari.events.InteractionCreateEvent) -> None:
     intGuildID = eventS.interaction.guild_id
     try:
-        casinoWarStart.d.Gameplaying[str(intGuildID)]
-        # print(casinoWarStart.d.Gameplaying)
+        casinoWarStart.d.CWplaying[str(intGuildID)]
+        # print(casinoWarStart.d.CWplaying)
 
     except:
-        casinoWarStart.d.Gameplaying[str(intGuildID)] = False
-        print(casinoWarStart.d.Gameplaying)
+        casinoWarStart.d.CWplaying[str(intGuildID)] = False
+        # print(casinoWarStart.d.CWplaying)
 
-    if casinoWarStart.d.Gameplaying[str(intGuildID)]:
+    if casinoWarStart.d.CWplaying[str(intGuildID)]:
         return
 
     if str(eventS.interaction.type) != "MESSAGE_COMPONENT":
@@ -32,7 +32,7 @@ async def event_cwStart(eventS: hikari.events.InteractionCreateEvent) -> None:
     if str(eventS.interaction.custom_id) != 'startCW':
         return
 
-    casinoWarStart.d.Gameplaying[str(intGuildID)] = True
+    casinoWarStart.d.CWplaying[str(intGuildID)] = True
 
     data = readGuildFile(intGuildID)
     startMsgID = data['cwMsg']['id']
@@ -150,11 +150,13 @@ async def event_cwStart(eventS: hikari.events.InteractionCreateEvent) -> None:
     # Shows player their card then moves to next player shortly after
     # Prints out the winners and amount won
     dealerCardNames = await make_hand(dealerHand)
-    img = await createImages.cards_image(dealerCardNames, event.interaction.app.get_me().id, intGuildID, True)
+    img = await createImages.cards_image(dealerCardNames, event.interaction.app.get_me().id, intGuildID)
 
     startEmbed = hikari.Embed(title='Dealer Hand').set_thumbnail().set_image(img)
 
     dealerMsg = await msg.edit(content='', embed=startEmbed, replace_attachments=True, components=[])
+
+    dealerTotal = await getTotValue(dealerHand)
 
     playerValues = []
     handMsg = None
@@ -168,8 +170,66 @@ async def event_cwStart(eventS: hikari.events.InteractionCreateEvent) -> None:
         for card in hand:
             playerCardNames.append(await getCardName(card['value'], card['suit']))
 
-    print('this is game logic running')
-    await event.interaction.message.delete()
+        print('this is game logic running')
+
+        player = await event.interaction.app.rest.fetch_member(intGuildID, player)
+
+        img = await createImages.cards_image(playerCardNames, player.user.id, intGuildID)
+
+        handEmbed = hikari.Embed(title=player.user.username).set_image(img)  # .set_thumbnail(DealerImg)
+
+        handMsg = await event.interaction.app.rest.create_message(channel=startChnID, content='', embed=handEmbed)
+        cardTotal = await getTotValue(hand)
+
+        playerValues.append({"player": player, "cardTotal": cardTotal})
+        await sleep(2)  # wait 0.3 seconds
+        await handMsg.delete()
+
+    img3 = await createImages.cards_image(dealerCardNames, event.interaction.app.get_me().id, intGuildID)
+    # create embed for dealer's hand
+    dealerEmbed = hikari.Embed(title='Dealer Hand').set_thumbnail().set_image(img3)
+    # edit msg to show dealer's hand
+    await dealerMsg.edit(content='', embed=dealerEmbed, replace_attachments=True, components=[])
+
+    msgID = await casinoWarStart.app.rest.fetch_message(message=startMsgID, channel=startChnID)
+    await msgID.edit(component=btnCW)
+    casinoWarStart.d.CWplaying[str(intGuildID)] = False
+
+    winningsEmbed = hikari.Embed(title='Winnings')
+    # add player and outcome to embed
+    for player in playerValues:
+        # intGuildID = intGuildID
+        playerID = player['player'].user.id  # grab ID of user
+        # initialize vars for scope
+        outcome = ''
+        ccTotal = 0
+        handTotal = player['cardTotal']  # grab player hand total
+        if handTotal == dealerTotal:  # tie, nothing happens
+            outcome = 'Tied'
+            ccTotal = getCCTotal(intGuildID, playerID)
+        elif handTotal > dealerTotal:  # beat dealer or (player < 21 and dealer bust), win bet
+            outcome = 'Won'
+            await addCoins(intGuildID, playerID, getBet(intGuildID, playerID))
+            ccTotal = getCCTotal(intGuildID, playerID)
+        elif handTotal < dealerTotal:  # player < dealer, lose bet
+            outcome = 'Lost'
+            await remCoins(intGuildID, playerID, getBet(intGuildID, playerID))
+            ccTotal = getCCTotal(intGuildID, playerID)
+        # set new account total for user
+        setCCTotal(intGuildID, playerID, ccTotal)
+        # add field to emberd with player info and new account total
+        winningsEmbed.add_field(name=f"{player['player'].user.username} - {outcome}",
+                                value=f'Now has {ccTotal} CasinoCoins')
+
+    # create msg with winnings embed
+    winningsMsg = await event.interaction.app.rest.create_message(startChnID, content='', embed=winningsEmbed)
+
+    await dealerMsg.delete()
+    await sleep(5)
+    await winningsMsg.delete()
+
+    # await event.interaction.message.delete()
+    # await dealerMsg.delete()
 
     btnCW = event.interaction.app.rest.build_action_row()
     (
@@ -185,13 +245,13 @@ async def event_cwStart(eventS: hikari.events.InteractionCreateEvent) -> None:
         .add_to_container()
     )
     msgID = await casinoWarStart.app.rest.fetch_message(message=startMsgID, channel=startChnID)
-    await msgID.edit(component=btnCW)
-    casinoWarStart.d.Gameplaying[str(intGuildID)] = False
+    await msgID.edit(component=btnCW)  # edit msg to update
+    casinoWarStart.d.CWplaying[str(intGuildID)] = False  # set to false since game over
 
 
 def load(bot: lightbulb.BotApp):
     bot.add_plugin(casinoWarStart)
-    casinoWarStart.d.Gameplaying = {}
+    casinoWarStart.d.CWplaying = {}
 
 
 def unload(bot: lightbulb.BotApp):

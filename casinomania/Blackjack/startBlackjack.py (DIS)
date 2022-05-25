@@ -39,25 +39,31 @@ async def event_bjStart(eventS: hikari.events.InteractionCreateEvent) -> None:
     startMsgID = data['bjMsg']['id']
     startChnID = data['bjMsg']['channel']
 
+    bjButtons = [
+        {'label': 'Create BJ Game', 'value': 'startBJ'},
+        {'label': 'Bet', 'value': 'bjBet'},
+    ]
     # Disable the btn to start game
     btnBJ = eventS.interaction.app.rest.build_action_row()
-    (
-        btnBJ.add_button(
-            # Gray button style, see also PRIMARY, and DANGER.
-            hikari.ButtonStyle.SECONDARY,
-            # Set the buttons custom ID to the label.
-            'startBJ',
+    for btn in bjButtons:
+        (
+            # Adding the buttons into the action row.
+            btnBJ.add_button(
+                # Gray button style, see also PRIMARY, and DANGER.
+                hikari.ButtonStyle.SECONDARY,
+                # Set the buttons custom ID to the label.
+                btn['value'],
+            )
+                # Set the actual label.
+                .set_label(btn['label']).set_is_disabled(True)
+                # Finally add the button to the container.
+                .add_to_container()
         )
-        # Set the actual label.
-        .set_label('Create BJ Game').set_is_disabled(True)
-        # Finally add the button to the container.
-        .add_to_container()
-    )
     # Grabs the message and edits with new button
     msgID = await bjStart.app.rest.fetch_message(message=startMsgID, channel=startChnID)
     await msgID.edit(component=btnBJ)
     # respond to button press so interaction does not fail
-    await bjStart.bot.rest.create_interaction_response(eventS.interaction, eventS.interaction.token, response_type=6)
+    # await bjStart.bot.rest.create_interaction_response(eventS.interaction, eventS.interaction.token, response_type=6)
 
     # create embed for joining and starting the game
     bjEmbed = hikari.Embed(title='Blackjack',
@@ -376,19 +382,21 @@ async def event_bjStart(eventS: hikari.events.InteractionCreateEvent) -> None:
     await winningsMsg.delete()
 
     # rebuild btn to be enabled
-    btnBJ = event.interaction.app.rest.build_action_row()
-    (
-        btnBJ.add_button(
-            # Gray button style, see also PRIMARY, and DANGER.
-            hikari.ButtonStyle.SECONDARY,
-            # Set the buttons custom ID to the label.
-            'startBJ',
+    btnBJ = eventS.interaction.app.rest.build_action_row()
+    for btn in bjButtons:
+        (
+            # Adding the buttons into the action row.
+            btnBJ.add_button(
+                # Gray button style, see also PRIMARY, and DANGER.
+                hikari.ButtonStyle.SECONDARY,
+                # Set the buttons custom ID to the label.
+                btn['value'],
+            )
+                # Set the actual label.
+                .set_label(btn['label']).set_is_disabled(False)
+                # Finally add the button to the container.
+                .add_to_container()
         )
-            # Set the actual label.
-            .set_label('Create BJ Game').set_is_disabled(False)
-            # Finally add the button to the container.
-            .add_to_container()
-    )
     # grab msg to re-enable btn
     msgID = await bjStart.app.rest.fetch_message(message=startMsgID, channel=startChnID)
     await msgID.edit(component=btnBJ)  # edit msg to update

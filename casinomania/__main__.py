@@ -3,9 +3,14 @@ import os
 # os.system('powershell pip install hikari, hikari-lightbulb, python-dotenv, tasks')
 # os.system('cls')
 import hikari
+import miru
 from lightbulb.ext import tasks
 from dotenv import load_dotenv
 import lightbulb
+
+
+from casinomania.functions.readWrite import setBet, getBet, getCCTotal,readGuildFile
+
 
 # https://github.com/parafoxia/hikari-intro/blob/main/lightbulb_bot/__main__.py
 
@@ -28,27 +33,29 @@ def create_bot() -> lightbulb.BotApp:
         # help_slash_command=True,
     )
 
-    # @bot.command()
-    # @lightbulb.add_checks(lightbulb.owner_only)
-    # @lightbulb.command('reload', 'reload plugins')
-    # @lightbulb.implements(lightbulb.SlashCommand)
-    # async def cmd_reload(ctx: lightbulb.context.Context) -> None:
-    #     plugins = []
-    #
-    #     for e in bot.extensions:
-    #         plugins.append(e)
-    #
-    #     for c in plugins:
-    #         # print(c)
-    #         bot.reload_extensions(c)
-    #     await ctx.respond(content='Reloaded the plugins', flags=hikari.MessageFlag.EPHEMERAL)
+    @bot.command()
+    @lightbulb.add_checks(lightbulb.owner_only)
+    @lightbulb.command('reload', 'reload plugins')
+    @lightbulb.implements(lightbulb.SlashCommand)
+    async def cmd_reload(ctx: lightbulb.context.Context) -> None:
+        plugins = []
+
+        for e in bot.extensions:
+            plugins.append(e)
+
+        for c in plugins:
+            # print(c)
+            bot.reload_extensions(c)
+        await ctx.respond(content='Reloaded the plugins', flags=hikari.MessageFlag.EPHEMERAL)
+
+    miru.load(bot)
 
     # bot.load_extensions_from("./casinomania/BaseFiles")
     bot.load_extensions_from("./casinomania/Listeners")
-
     bot.load_extensions_from("./casinomania/Commands")
     bot.load_extensions_from("./casinomania/Blackjack")
     bot.load_extensions_from("./casinomania/CasinoWar")
+    # bot.load_extensions_from("./casinomania/Leaderboard")
 
     # Loads tasks and autostart tasks will start
     # tasks.load(bot)

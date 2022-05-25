@@ -1,0 +1,71 @@
+import lightbulb, hikari
+import miru
+
+from casinomania.functions.readWrite import setBet, getBet, getCCTotal
+
+from casinomania.btnViews import views
+
+betPL = lightbulb.Plugin('betPL')
+SlashCommand = lightbulb.SlashCommand
+
+
+# @betPL.command()
+# # @lightbulb.option('amount', 'Amount to bet', type=int, max_value=2000, min_value=1)
+# @lightbulb.command('bet', 'Set bet amount', ephemeral=True)
+# @lightbulb.implements(SlashCommand)
+# async def cmd_bet(ctx: lightbulb.context.Context):
+#     # get channel id when button clicked
+#     # amount = ctx.options.amount
+#
+#     modal = MyModal("Set Your Bet", timeout=30)
+#     modal.add_item(miru.TextInput(label="Bet", placeholder="Ex: 10", required=True, ))
+#     # modal.add_item(miru.TextInput(label="Info", value="", required=True,
+#     #                               style=hikari.TextInputStyle.PARAGRAPH))
+#
+#     await modal.send(ctx.interaction)
+#     # await modal.wait(30)
+
+
+@betPL.listener(event=hikari.events.InteractionCreateEvent)
+async def betBtn(event: hikari.events.InteractionCreateEvent):
+    # check for interaction on a msg that is a button and has custom id for game being played
+    if str(event.interaction.type) != "MESSAGE_COMPONENT":
+        return
+
+    if str(event.interaction.component_type) != "BUTTON":
+        return
+
+    if str(event.interaction.custom_id) not in ['bjBet', 'cwBet']:
+        return
+
+    view = views.Blackjack()
+    # test = [view.build()]
+    await event.app.rest.create_message(970829709669720114, components=view.build())
+    view.start_listener()
+
+    modal = views.MyModal("Set Your Bet", timeout=30)
+    modal.add_item(miru.TextInput(label="Bet", placeholder="Ex: 10", required=True, ))
+    # modal.add_item(miru.TextInput(label="Info", value="", required=True,
+    #                               style=hikari.TextInputStyle.PARAGRAPH))
+
+    # await event.interaction.
+
+    # event.interaction.
+
+    return
+
+
+# @betPL.listener(event=lightbulb.events.LightbulbStartedEvent)
+# async def startup_views(event: lightbulb.events.LightbulbStartedEvent) -> None:
+#     viewsList = [views.Blackjack()]
+#     # view = views.Blackjack()
+#     for view in viewsList:
+#         view.start_listener()
+
+
+def load(bot: lightbulb.BotApp):
+    bot.add_plugin(betPL)
+
+
+def unload(bot: lightbulb.BotApp):
+    bot.remove_plugin(betPL)
