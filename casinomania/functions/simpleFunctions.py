@@ -9,7 +9,6 @@ async def getCardName(num, suit):
 
 async def addCoins(guildID, userID, count):
     data = None
-
     try:
         data = readWrite.readGuildFile(guildID)
     except:
@@ -23,7 +22,9 @@ async def addCoins(guildID, userID, count):
     if wallet == 0:
         total = 5
         # data[str(userID)]['bet'] = 5
-        readWrite.setBet(guildID,userID,5)
+        games = ['casino-war', 'blackjack']
+        for game in games:
+            readWrite.setBet(guildID, userID, 5, game)
 
     readWrite.setCCTotal(guildID=guildID, userID=userID, ccTotal=total)
 
@@ -44,14 +45,16 @@ async def remCoins(guildID, userID, count):
     readWrite.setCCTotal(guildID=guildID, userID=str(userID), ccTotal=total)
 
     data = readWrite.readGuildFile(guildID)
-    bet = data[str(userID)]['bet']
-    wallet = data[str(userID)]['coins']
-    # print(bet, wallet)
-    if bet > wallet:
-        print(data[str(userID)])
-        data[str(userID)]['bet'] = wallet
-        readWrite.setBet(guildID, str(userID), wallet)
-        # readWrite.writeGuildFile(data, guildID)
+    games = ['casino-war', 'blackjack']
+    for game in games:
+        bet = data[str(userID)][f'{game}']
+        wallet = data[str(userID)]['coins']
+        # print(bet, wallet)
+        if bet > wallet:
+            # print(data[str(userID)])
+            data[str(userID)][f'{game}'] = wallet
+            readWrite.setBet(guildID, str(userID), wallet, game)
+            # readWrite.writeGuildFile(data, guildID)
 
 
 async def getTotValue(hand):

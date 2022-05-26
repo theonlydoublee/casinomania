@@ -1,6 +1,8 @@
 from lightbulb.ext import tasks
 import lightbulb, hikari
 
+from casinomania.leaderboard.updateBoard import leaderboardUpdater
+
 plugin = lightbulb.Plugin("statusUpdater")
 
 
@@ -8,6 +10,8 @@ plugin = lightbulb.Plugin("statusUpdater")
 @tasks.task(s=30, auto_start=True)
 async def statusUpdater():
     print('Task Ran')
+    await leaderboardUpdater()
+    print('task done')
 
 
 def load(bot: lightbulb.BotApp):

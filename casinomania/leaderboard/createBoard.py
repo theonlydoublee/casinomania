@@ -19,7 +19,8 @@ from casinomania.leaderboard.updateBoard import leaderboardUpdater
 async def cmd_IniBJ(ctx: lightbulb.Context):
     # await ctx.bot.rest.create_interaction_response(ctx.interaction, token=ctx.interaction.token, response_type=5)
     data = readGuildFile(ctx.guild_id)
-
+    print(ctx.guild_id)
+    # print(data['lbMsg'])
     channel = await ctx.bot.rest.fetch_channel(ctx.channel_id)
     chName = channel.name
 
@@ -32,8 +33,15 @@ async def cmd_IniBJ(ctx: lightbulb.Context):
 
         await ctx.respond(f"Leaderboard already exists in <#{data['lbMsg']['channel']}>", flags=hikari.MessageFlag.EPHEMERAL)
     except:
+        placeholder = hikari.Embed(title='Wait for bot to update', description='...')
+        msg = await leaderboardPL.app.rest.create_message(channel=ctx.channel_id, embed=placeholder)
 
-        await leaderboardUpdater()
+        data['lbMsg'] = {'channel': ctx.channel_id, 'id': msg.id}
+
+        # data['lbMsg']['channel'] = ctx.channel_id
+        # data['lbMsg']['id'] = msg.id
+        writeGuildFile(data, ctx.guild_id)
+        # await leaderboardUpdater()
 
         # btnBJ = ctx.bot.rest.build_action_row()
         """(
@@ -48,19 +56,6 @@ async def cmd_IniBJ(ctx: lightbulb.Context):
             # Finally add the button to the container.
             .add_to_container()
         )"""
-
-        lbEmbed = hikari.Embed(title='Casino Leaderboard',
-                               description='The bigger the wallet, the Higher the rank!',
-                               ).set_thumbnail('casinomania/images/BlackjackThumbnail.png').add_field(name=f'{leaderboardUpdater}', value="500")
-
-        msg = await ctx.bot.rest.create_message(ctx.channel_id, embed=lbEmbed)
-        chID = ctx.channel_id
-
-        data['lbMsg'] = {'id': str(msg.id), 'channel': str(chID)}
-
-        # data['bjMsg']['id'] = str(msg.id)
-        # data['bjMsg']['channel'] = str(chID)
-        writeGuildFile(data, ctx.guild_id)
 
         await ctx.respond(content='Created Message', flags=hikari.MessageFlag.EPHEMERAL)
 

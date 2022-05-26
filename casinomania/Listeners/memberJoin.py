@@ -32,13 +32,13 @@ async def joinedGuild(event: hikari.GuildJoinEvent):
     for member in members:
         if not member.is_bot:
             # print(member)
-            data[str(member.user.id)] = {'coins': 100, 'bet': 10}
+            data[str(member.user.id)] = {'coins': 100, 'blackjack': 10, 'casino-war': 10}
 
     writeGuildFile(data, guildID)
 
 
 def load(bot: lightbulb.BotApp):
-    print('loading listeners')
+    # print('loading listeners')
     bot.add_plugin(bjJoin)
 
 

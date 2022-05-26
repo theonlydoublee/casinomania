@@ -1,19 +1,14 @@
-import hikari, lightbulb
-from casinomania.functions.readWrite import readGuildFile, writeGuildFile
-
-blackjackPL = lightbulb.Plugin('blackjackPL', include_datastore=True)
-
-SlashCommand = lightbulb.SlashCommand
-
-
-import lightbulb, hikari, miru
+import hikari, lightbulb, miru
 import random
 from asyncio import sleep
 from casinomania.functions import createImages
 from casinomania.functions.simpleFunctions import getCardName, getTotValue, addCoins, remCoins, create_Decks, make_hand
 from casinomania.functions.readWrite import getBet, setBet, setCCTotal, getCCTotal
-
 from casinomania.functions.readWrite import readGuildFile, writeGuildFile
+
+blackjackPL = lightbulb.Plugin('blackjackPL', include_datastore=True)
+
+SlashCommand = lightbulb.SlashCommand
 
 
 class Blackjack(miru.View):
@@ -24,7 +19,6 @@ class Blackjack(miru.View):
     async def btn_Bj(self, button: miru.Button, ctx: miru.ViewContext) -> None:
         intGuildID = ctx.interaction.guild_id  # get guildID
 
-        msgd = await ctx.respond('starting game')
 
         # print(intGuildID)
         # print(ctx.interaction.guild_id)
@@ -36,9 +30,10 @@ class Blackjack(miru.View):
 
         # print('testin')
         if blackjackPL.d.BJplaying[str(intGuildID)]:  # if var is true, then game in progress
-            print('true')
+            # print('true')
             return
 
+        msgd = await ctx.respond('starting game')
         # print('playing')
 
         # print(ctx.interaction.type)
@@ -94,7 +89,7 @@ class Blackjack(miru.View):
                                ).set_thumbnail('casinomania/images/BlackjackThumbnail.png')
         # List of buttons to have on msg to start game
         buttons = [
-            {'label': 'Start', 'value': 'blackjackPL'},
+            {'label': 'Start', 'value': 'bjStart'},
             {'label': 'Join', 'value': 'bjJoin'},
         ]
         # builds the buttons to be added to msg
@@ -141,7 +136,7 @@ class Blackjack(miru.View):
                     # and e.interaction.user.id == ctx.author.id  # can be used to only allow user that created game to start
                     and e.interaction.message.id == msg.id  # Only waits for interaction on created msg with embed
                     and e.interaction.component_type == hikari.ComponentType.BUTTON  # only a btn interaction
-                    and (e.interaction.custom_id == 'blackjackPL' or e.interaction.custom_id == 'bjJoin')
+                    and (e.interaction.custom_id == 'bjStart' or e.interaction.custom_id == 'bjJoin')
                     # custom ids of btns so only waits for that game
                 )
                 # set vars for later use
@@ -149,10 +144,10 @@ class Blackjack(miru.View):
                 interaction = event.interaction
                 custID = event.interaction.custom_id  # grab cust id to know what was clicked
             except:
-                custID = 'blackjackPL'  # if time out, start game
+                custID = 'bjStart'  # if time out, start game
 
             # Check if start was clicked
-            if custID == 'blackjackPL':
+            if custID == 'bjStart':
                 # print('start BJ')  # debug log
                 starting = False  # set starting to false for game to start
             else:
@@ -376,6 +371,7 @@ class Blackjack(miru.View):
         winningsEmbed = hikari.Embed(title='Winnings')
         # add player and outcome to embed
         for player in playerValues:
+            game = 'blackjack'
             # intGuildID = intGuildID
             playerID = player['player'].user.id  # grab ID of user
             # initialize vars for scope
@@ -384,7 +380,7 @@ class Blackjack(miru.View):
             handTotal = player['cardTotal']  # grab player hand total
             if handTotal > 21:  # if more that 21, lose bet
                 outcome = 'Busted'
-                await remCoins(intGuildID, playerID, getBet(intGuildID, playerID))
+                await remCoins(intGuildID, playerID, getBet(intGuildID, playerID, game))
                 ccTotal = getCCTotal(intGuildID, playerID)
             elif handTotal == dealerTotal:  # tie, nothing happens
                 outcome = 'Tied'
@@ -392,11 +388,11 @@ class Blackjack(miru.View):
             elif (
                     handTotal > dealerTotal) or dealerTotal == 100:  # beat dealer or (player < 21 and dealer bust), win bet
                 outcome = 'Won'
-                await addCoins(intGuildID, playerID, getBet(intGuildID, playerID))
+                await addCoins(intGuildID, playerID, getBet(intGuildID, playerID, game))
                 ccTotal = getCCTotal(intGuildID, playerID)
             elif handTotal < dealerTotal:  # player < dealer, lose bet
                 outcome = 'Lost'
-                await remCoins(intGuildID, playerID, getBet(intGuildID, playerID))
+                await remCoins(intGuildID, playerID, getBet(intGuildID, playerID, game))
                 ccTotal = getCCTotal(intGuildID, playerID)
             # set new account total for user
             setCCTotal(intGuildID, playerID, ccTotal)
@@ -438,16 +434,15 @@ class Blackjack(miru.View):
         return
 
     # Providing custom IDs to all items
-    @miru.button(label="Bet", custom_id="btnBet")
+    @miru.button(label="Bet", custom_id="btnBJBet")
     async def btn_BetBJ(self, button: miru.Button, ctx: miru.ViewContext) -> None:
-        # print('bet clicked')
-        # await ctx.respond('Check DMs')
         guildID = ctx.guild_id
         userID = ctx.user.id
         maxBet = int(getCCTotal(guildID, userID))
 
         modal = MyModal(f"Set Your Bet You have {maxBet} coins", timeout=30)
         modal.add_item(miru.TextInput(label="Bet", placeholder="Ex: 10", required=True, ))
+        # await ctx.respond_with_modal(modal)
         await modal.send(ctx.interaction)
 
 
@@ -465,27 +460,17 @@ class MyModal(miru.Modal):
             userID = ctx.user.id
             maxBet = int(getCCTotal(guildID, userID))
 
-            # print(amount)
-            # int(amount)
             if amount < 1:
                 await ctx.respond(f'Only positive ints allowed', flags=hikari.MessageFlag.EPHEMERAL)
             elif amount > maxBet:
-                setBet(guildID, userID, maxBet)
+                setBet(guildID, userID, maxBet, chName)
                 await ctx.respond(f'Amount too high\nGoing all in at: {maxBet}', flags=hikari.MessageFlag.EPHEMERAL)
             else:
-                setBet(guildID, userID, amount)
+                setBet(guildID, userID, amount, chName)
                 # await ctx.respond(f'Now betting: {getBet(guildID, userID)}')
                 await ctx.respond(content=f'Now betting {values[0]}', flags=hikari.MessageFlag.EPHEMERAL)
         except:
             await ctx.respond(content=f'Enter a valid bet, int only', flags=hikari.MessageFlag.EPHEMERAL)
-
-        # await ctx.app.rest.create_message(channel, embed=hikari.Embed(title=values[0],
-        #                                                               description=f'{values[0]}')
-        #                                   .set_author(name=ctx.author.username, icon=ctx.author.display_avatar_url))
-        # event = await miruPL.bot.wait_for(
-        #     hikari.DMMessageCreateEvent,
-        #     timeout=30
-        # )
 
 
 @blackjackPL.command()
@@ -508,39 +493,6 @@ async def cmd_IniBJ(ctx: lightbulb.Context):
         await ctx.respond(f"Button already exists in <#{data['bjMsg']['channel']}>", flags=hikari.MessageFlag.EPHEMERAL)
     except:
 
-        bjButtons = [
-            {'label': 'Create BJ Game', 'value': 'startBJ'},
-            {'label': 'Bet', 'value': 'bjBet'},
-        ]
-
-        bjBtns = ctx.bot.rest.build_action_row()
-        for btn in bjButtons:
-            (
-                # Adding the buttons into the action row.
-                bjBtns.add_button(
-                    # Gray button style, see also PRIMARY, and DANGER.
-                    hikari.ButtonStyle.SECONDARY,
-                    # Set the buttons custom ID to the label.
-                    btn['value'],
-                )
-                    # Set the actual label.
-                    .set_label(btn['label'])
-                    # Finally add the button to the container.
-                    .add_to_container()
-            )
-        # btnBJ = ctx.bot.rest.build_action_row()
-        # (
-        #     btnBJ.add_button(
-        #         # Gray button style, see also PRIMARY, and DANGER.
-        #         hikari.ButtonStyle.SECONDARY,
-        #         # Set the buttons custom ID to the label.
-        #         'startBJ',
-        #     )
-        #     # Set the actual label.
-        #     .set_label('Create BJ Game')
-        #     # Finally add the button to the container.
-        #     .add_to_container()
-        # )
         view = Blackjack()
         msg = await ctx.bot.rest.create_message(ctx.channel_id, components=view.build())
         view.start_listener()

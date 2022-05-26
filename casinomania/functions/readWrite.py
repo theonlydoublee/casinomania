@@ -47,17 +47,17 @@ def getCCTotal(guildID, userID):
     return total
 
 
-def setBet(guildID, userID, betAmount):
+def setBet(guildID, userID, betAmount, game):
     data = readGuildFile(guildID)
-    data[str(userID)]['bet'] = betAmount
+    data[str(userID)][f'{game}'] = betAmount
     # print(data)
     # print(f"set: {data}")
     writeGuildFile(data, guildID)
 
 
-def getBet(guildID, userID):
+def getBet(guildID, userID, game):
     data = readGuildFile(guildID)
-    total = data[str(userID)]['bet']
+    total = data[str(userID)][f'{game}']
     # print(data)
     # print(f"set: {data}")
     return total

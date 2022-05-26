@@ -6,6 +6,7 @@ continuously check the wallet of each player saved within the .json files every 
 import lightbulb, hikari
 from lightbulb.ext import tasks
 import lightbulb, hikari
+from casinomania.functions.readWrite import readGuildFile, writeGuildFile
 import os
 
 from casinomania.functions.readWrite import setBet, getBet, getCCTotal,readGuildFile
@@ -25,6 +26,7 @@ async def leaderboardUpdater():
     # print(guildIDs)
     for guildID in guildIDs:
         currentGuildData = readGuildFile(guildID=guildID)
+        print(currentGuildData)
         users = []
         for item in currentGuildData:
             if len(item) == 18:
@@ -36,8 +38,10 @@ async def leaderboardUpdater():
         users = sorted(users, key=lambda k: k['userCoins'], reverse=True)
         i = 0
         for user in users:
-            lbEmbed.add_field(name=user['userID'], value=user['userCoins'])
 
+            lbEmbed.add_field(name=user['userID'], value=user['userCoins'])
+        msg = await lbuplugin.bot.rest.fetch_message(channel=currentGuildData['lbMsg']['channel'], message=currentGuildData['lbMsg']['id'])
+        await msg.edit(embed=lbEmbed)
 
 
 def load(bot: lightbulb.BotApp):

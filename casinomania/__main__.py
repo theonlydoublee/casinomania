@@ -1,7 +1,6 @@
 import os
-# install base libraries, comment out the os.system lines after running
-# os.system('powershell pip install hikari, hikari-lightbulb, python-dotenv, tasks')
-# os.system('cls')
+from asyncio import sleep
+
 import hikari
 import miru
 from lightbulb.ext import tasks
@@ -48,17 +47,19 @@ def create_bot() -> lightbulb.BotApp:
             bot.reload_extensions(c)
         await ctx.respond(content='Reloaded the plugins', flags=hikari.MessageFlag.EPHEMERAL)
 
-    miru.load(bot)
-
     # bot.load_extensions_from("./casinomania/BaseFiles")
+    # bot.load_extensions_from("./casinomania/Commands")
+    bot.load_extensions_from("./casinomania/Leaderboard")
+
     bot.load_extensions_from("./casinomania/Listeners")
-    bot.load_extensions_from("./casinomania/Commands")
     bot.load_extensions_from("./casinomania/Blackjack")
     bot.load_extensions_from("./casinomania/CasinoWar")
-    # bot.load_extensions_from("./casinomania/Leaderboard")
+    bot.load_extensions_from("./casinomania/Tasks")
 
     # Loads tasks and autostart tasks will start
-    # tasks.load(bot)
+    tasks.load(bot)
+
+    miru.load(bot)
 
     bot.d.cardValues = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'jack', 'queen', 'king', 'ace']
     # bot.d.cardValues = ['king', 'ace']
@@ -68,4 +69,7 @@ def create_bot() -> lightbulb.BotApp:
 
 
 if __name__ == "__main__":
-    create_bot().run()
+    bot = create_bot()
+    bot.run()
+    # sleep(10)
+
