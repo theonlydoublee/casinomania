@@ -119,6 +119,7 @@ class CasinoWar(miru.View):
         await msgd.delete()
         starting = True
         players = []
+        players.append(ctx.user.id)
         event = None
         while starting:
             token = None

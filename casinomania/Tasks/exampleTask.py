@@ -7,11 +7,11 @@ plugin = lightbulb.Plugin("statusUpdater")
 
 
 # @plugin.command
-@tasks.task(s=30, auto_start=True)
+@tasks.task(m=1.5, auto_start=True)
 async def statusUpdater():
-    print('Task Ran')
+    # print('Task Ran')
     await leaderboardUpdater()
-    print('task done')
+    # print('task done')
 
 
 def load(bot: lightbulb.BotApp):

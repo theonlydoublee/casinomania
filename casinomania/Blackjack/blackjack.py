@@ -17,23 +17,26 @@ class Blackjack(miru.View):
 
     @miru.button(label="Create BJ Game", custom_id="startBJ")
     async def btn_Bj(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+
+        view = Blackjack()
+        view.stop()
+
         intGuildID = ctx.interaction.guild_id  # get guildID
-
-
+        players = []
+        players.append(ctx.interaction.user.id)
         # print(intGuildID)
         # print(ctx.interaction.guild_id)
 
-        try:
-            blackjackPL.d.BJplaying[str(intGuildID)]  # Check if gameplaying var has guild in it
-        except:
-            blackjackPL.d.BJplaying[str(intGuildID)] = False  # if guild not in var, add and set to false
+        # try:
+        #     blackjackPL.d.BJplaying[str(intGuildID)]  # Check if gameplaying var has guild in it
+        # except:
+        #     blackjackPL.d.BJplaying[str(intGuildID)] = False  # if guild not in var, add and set to false
+        #
+        # # print('testin')
+        # if blackjackPL.d.BJplaying[str(intGuildID)]:  # if var is true, then game in progress
+        #     # print('true')
+        #     return
 
-        # print('testin')
-        if blackjackPL.d.BJplaying[str(intGuildID)]:  # if var is true, then game in progress
-            # print('true')
-            return
-
-        msgd = await ctx.respond('starting game')
         # print('playing')
 
         # print(ctx.interaction.type)
@@ -49,7 +52,7 @@ class Blackjack(miru.View):
         # if str(ctx.interaction.custom_id) != 'startBJ':
         #     return
 
-        blackjackPL.d.BJplaying[str(intGuildID)] = True  # set to true so another game can't start
+        # blackjackPL.d.BJplaying[str(intGuildID)] = True  # set to true so another game can't start
 
         # grab the msg and channel the game button is in
         data = readGuildFile(intGuildID)
@@ -79,6 +82,8 @@ class Blackjack(miru.View):
         # Grabs the message and edits with new button
         msgID = await blackjackPL.app.rest.fetch_message(message=startMsgID, channel=startChnID)
         await msgID.edit(component=btnBJ)
+        msgd = await ctx.respond('starting game, auto joined')
+
         # respond to button press so interaction does not fail
         # await blackjackPL.bot.rest.create_interaction_response(ctx.interaction, ctx.interaction.token,
         #                                                    response_type=6)
@@ -117,7 +122,7 @@ class Blackjack(miru.View):
         starting = True
 
         # initialize vars for game
-        players = []
+
         event = None
 
         # loop until start btn is pressed
@@ -428,7 +433,8 @@ class Blackjack(miru.View):
         #     )
         # grab msg to re-enable btn
         msgID = await blackjackPL.app.rest.fetch_message(message=startMsgID, channel=startChnID)
-        # view = Blackjack()
+        view = Blackjack()
+        view.start_listener()
         await msgID.edit(components=Blackjack().build())  # edit msg to update
         blackjackPL.d.BJplaying[str(intGuildID)] = False  # set to false since game over
         return

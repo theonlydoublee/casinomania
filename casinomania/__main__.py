@@ -54,6 +54,7 @@ def create_bot() -> lightbulb.BotApp:
     bot.load_extensions_from("./casinomania/Listeners")
     bot.load_extensions_from("./casinomania/Blackjack")
     bot.load_extensions_from("./casinomania/CasinoWar")
+    bot.load_extensions_from("./casinomania/payments")
     bot.load_extensions_from("./casinomania/Tasks")
 
     # Loads tasks and autostart tasks will start

@@ -16,17 +16,18 @@ lbuplugin = lightbulb.Plugin("leaderboardupdater")
 
 #full_file_paths = get_filepaths("/casinomania/Data")
 
+
 @tasks.task(m=2, auto_start=True)
 async def leaderboardUpdater():
     guildIDs = os.listdir('casinomania/Data/')
 
-    lbEmbed = hikari.Embed(title='Casino Leaderboard',
-                           description='The bigger the wallet, the Higher the rank!',
-                           ).set_thumbnail('casinomania/images/BlackjackThumbnail.png')
     # print(guildIDs)
     for guildID in guildIDs:
+        lbEmbed = hikari.Embed(title='Casino Leaderboard',
+                               description='The bigger the wallet, the Higher the rank!',
+                               )  # .set_thumbnail('casinomania/images/BlackjackThumbnail.png')
         currentGuildData = readGuildFile(guildID=guildID)
-        print(currentGuildData)
+        # print(currentGuildData)
         users = []
         for item in currentGuildData:
             if len(item) == 18:
@@ -38,8 +39,11 @@ async def leaderboardUpdater():
         users = sorted(users, key=lambda k: k['userCoins'], reverse=True)
         i = 0
         for user in users:
-
-            lbEmbed.add_field(name=user['userID'], value=user['userCoins'])
+            if i > 10:
+                break
+            userName = (await lbuplugin.bot.rest.fetch_user(user['userID'])).username
+            lbEmbed.add_field(name=userName, value=user['userCoins']) # change name=user['userID'] to name=ctx.message.server.get_member(id)
+            i += 1
         msg = await lbuplugin.bot.rest.fetch_message(channel=currentGuildData['lbMsg']['channel'], message=currentGuildData['lbMsg']['id'])
         await msg.edit(embed=lbEmbed)
 
