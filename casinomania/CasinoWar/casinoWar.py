@@ -96,7 +96,7 @@ class CasinoWar(miru.View):
 
         buttons = [
             {'label': 'Start', 'value': 'cwStart'},
-            {'label': 'Join', 'value': 'cwJoin'},
+            {'label': 'Join/Leave', 'value': 'cwJoin'},
         ]
         cwBtns = ctx.interaction.app.rest.build_action_row()
 

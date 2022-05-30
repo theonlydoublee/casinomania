@@ -27,15 +27,15 @@ class Blackjack(miru.View):
         # print(intGuildID)
         # print(ctx.interaction.guild_id)
 
-        # try:
-        #     blackjackPL.d.BJplaying[str(intGuildID)]  # Check if gameplaying var has guild in it
-        # except:
-        #     blackjackPL.d.BJplaying[str(intGuildID)] = False  # if guild not in var, add and set to false
-        #
-        # # print('testin')
-        # if blackjackPL.d.BJplaying[str(intGuildID)]:  # if var is true, then game in progress
-        #     # print('true')
-        #     return
+        try:
+            blackjackPL.d.BJplaying[str(intGuildID)]  # Check if gameplaying var has guild in it
+        except:
+            blackjackPL.d.BJplaying[str(intGuildID)] = False  # if guild not in var, add and set to false
+
+        # print('testin')
+        if blackjackPL.d.BJplaying[str(intGuildID)]:  # if var is true, then game in progress
+            # print('true')
+            return
 
         # print('playing')
 
@@ -95,7 +95,7 @@ class Blackjack(miru.View):
         # List of buttons to have on msg to start game
         buttons = [
             {'label': 'Start', 'value': 'bjStart'},
-            {'label': 'Join', 'value': 'bjJoin'},
+            {'label': 'Join/Leave', 'value': 'bjJoin'},
         ]
         # builds the buttons to be added to msg
         bjBtns = ctx.interaction.app.rest.build_action_row()
