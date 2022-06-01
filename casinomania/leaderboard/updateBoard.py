@@ -25,9 +25,8 @@ async def leaderboardUpdater():
     for guildID in guildIDs:
         lbEmbed = hikari.Embed(title='Casino Leaderboard',
                                description='The bigger the wallet, the Higher the rank!',
-                               )  # .set_thumbnail('casinomania/images/BlackjackThumbnail.png')
+                               )
         currentGuildData = readGuildFile(guildID=guildID)
-        # print(currentGuildData)
         users = []
         for item in currentGuildData:
             if len(item) == 18:

@@ -27,7 +27,7 @@ def create_bot() -> lightbulb.BotApp:
     intents = []
     bot = lightbulb.BotApp(
         token=TOKEN,
-        intents=hikari.Intents.GUILD_MEMBERS | hikari.Intents.GUILDS
+        intents=hikari.Intents.ALL
         # default_enabled_guilds=GUILDS,
         # help_slash_command=True,
     )
